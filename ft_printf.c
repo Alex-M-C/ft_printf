@@ -1,110 +1,95 @@
-#include <stdio.h>
-#include <limits.h>
+
 #include "ft_printf.h"
 
-int main() {
-    char *puntero = "Hola mundo";
-    char *cadena_vacia = "";
-    char *cadena_nula = NULL;
-    int numero_negativo = -42;
-    unsigned int entero_mas_grande = UINT_MAX;
-    long long entero_largo = LLONG_MAX;
+static ssize_t	ft_putnbr_hex(int nbr, char *basehex)
+{
+	unsigned int	unbr;
+	char			*base;
+	ssize_t			len;
 
-    // Prueba básica
-    printf("Hola mundo\n");
-    ft_printf("Hola mundo\n");
+	base = basehex;
+	len = 0;
+	if (nbr < 0)
+		unbr = (unsigned int)nbr;
+	else
+		unbr = nbr;
+	if (unbr >= 16)
+		len = ft_putnbr_hex(unbr / 16, base);
+	write(1, &base[unbr % 16], 1);
+	return (len + 1);
+}
 
-    // Pruebas de longitud
-    printf("| len %d\n", printf("Hola mundo"));
-    ft_printf("| len %d\n", ft_printf("Hola mundo"));
+static ssize_t	ft_putuint_base(unsigned int num, char *base)
+{
+	ssize_t	size;
+	ssize_t	temp;
+	size_t	base_len;
 
-    // Prueba de caracteres
-    printf("| len %d\n", printf("prueba char %c %c %c %c", 'H', 'o', 'l', 'a'));
-    ft_printf("| len %d\n", ft_printf("prueba char %c %c %c %c", 'H', 'o', 'l', 'a'));
+	size = 0;
+	temp = 0;
+	if (!base)
+		return (0);
+	base_len = ft_strlen(base);
+	if (num >= base_len)
+		temp = ft_putlong_base(num / base_len, base);
+	if (temp != -1)
+		size = temp;
+	else
+		return (-1);
+	temp = ft_putchar(base[num % base_len]);
+	if (temp == -1)
+		return (-1);
+	return (size + temp);
+}
 
-    // Pruebas de cadenas
-    printf("| len %d\n", printf("prueba string %s %s", "Hola", "mundo"));
-    ft_printf("| len %d\n", ft_printf("prueba string %s %s", "Hola", "mundo"));
+static ssize_t	ft_format(ssize_t i, char const c, va_list args)
+{
+	ssize_t	n_printed;
 
-    // Prueba de puntero
-    printf("| len %d\n", printf("prueba puntero %p", puntero));
-    ft_printf("| len %d\n", ft_printf("prueba puntero %p", puntero));
+	if (c == 'c')
+		n_printed = ft_putchar(va_arg(args, int));
+	else if (c == 's')
+		n_printed = ft_putstr(va_arg(args, char *));
+	else if (c == 'p')
+		n_printed = ft_printmem(va_arg(args, void *));
+	else if (c == 'd' || c == 'i')
+		n_printed = ft_putnbr_base(va_arg(args, int), "0123456789");
+	else if (c == 'u')
+		n_printed = ft_putuint_base(va_arg(args, unsigned int), "0123456789");
+	else if (c == 'x')
+		n_printed = ft_putnbr_hex(va_arg(args, int), "0123456789abcdef");
+	else if (c == 'X')
+		n_printed = ft_putnbr_hex(va_arg(args, int), "0123456789ABCDEF");
+	else if (c == '%')
+		n_printed = ft_putchar('%');
+	if (n_printed < 0)
+		return (-1);
+	else
+		return (i + n_printed);
+}
 
-    // Pruebas con enteros
-    printf("| len %d\n", printf("prueba int %%d %d %d %d", 10, 11, 12));
-    ft_printf("| len %d\n", ft_printf("prueba int %%d %d %d %d", 10, 11, 12));
+int	ft_printf(char const *mod, ...)
+{
+	va_list	args;
+	size_t	i;
+	ssize_t	n_char;
 
-    printf("| len %d\n", printf("prueba int %%i %i %i %i", 10, 11, 12));
-    ft_printf("| len %d\n", ft_printf("prueba int %%i %i %i %i", 10, 11, 12));
-
-    printf("| len %d\n", printf("prueba int %%u %u %u %u", 10, 11, 12));
-    ft_printf("| len %d\n", ft_printf("prueba int %%u %u %u %u", 10, 11, 12));
-
-    // Pruebas hexadecimales
-    printf("| len %d\n", printf("prueba hexadecimal %x", 42424242));
-    ft_printf("| len %d\n", ft_printf("prueba hexadecimal %x", 42424242));
-
-    printf("| len %d\n", printf("prueba HEXADECIMAL %X", 42424242));
-    ft_printf("| len %d\n", ft_printf("prueba HEXADECIMAL %X", 42424242));
-
-    // Pruebas de punteros inválidos
-    printf("| len %d\n", printf("prueba punteros %p", (void *)-14523));
-    ft_printf("| len %d\n", ft_printf("prueba punteros %p", (void *)-14523));
-
-    // Prueba de punteros nulos
-    printf("| len %d\n", printf("prueba punteros nulos %p %p", (void *)0, (void *)0));
-    ft_printf("| len %d\n", ft_printf("prueba punteros nulos %p %p", (void *)0, (void *)0));
-
-    // Prueba de cadena vacía
-    printf("| len %d\n", printf("prueba cadena vacía: %s\n", cadena_vacia));
-    ft_printf("| len %d\n", ft_printf("prueba cadena vacía: %s\n", cadena_vacia));
-
-    // Prueba de cadena nula
-    printf("| len %d\n", printf("prueba cadena nula: %s\n", cadena_nula));
-    ft_printf("| len %d\n", ft_printf("prueba cadena nula: %s\n", cadena_nula));
-
-    // Prueba con caracteres especiales
-    printf("| len %d\n", printf("prueba con %% %s\n", "cadena"));
-    ft_printf("| len %d\n", ft_printf("prueba con %% %s\n", "cadena"));
-
-    // Prueba de un carácter fuera de rango
-    printf("| len %d\n", printf("prueba char fuera de rango: %c\n", 256));
-    ft_printf("| len %d\n", ft_printf("prueba char fuera de rango: %c\n", 256));
-
-    // Prueba de un número negativo
-    printf("| len %d\n", printf("prueba entero negativo: %d\n", numero_negativo));
-    ft_printf("| len %d\n", ft_printf("prueba entero negativo: %d\n", numero_negativo));
-
-    // Prueba de un entero más grande que UINT_MAX
-    printf("| len %d\n", printf("prueba entero largo: %llu\n", entero_largo));
-    ft_printf("| len %d\n", ft_printf("prueba entero largo: %llu\n", entero_largo));
-
-    // Prueba con el valor máximo de un entero sin signo
-    printf("| len %d\n", printf("prueba unsigned int máximo: %u\n", entero_mas_grande));
-    ft_printf("| len %d\n", ft_printf("prueba unsigned int máximo: %u\n", entero_mas_grande));
-
-    // Pruebas adicionales con diferentes formatos
-    printf("| len %d\n", printf("prueba char %c y string %s\n", 'X', "cadena"));
-    ft_printf("| len %d\n", ft_printf("prueba char %c y string %s\n", 'X', "cadena"));
-
-    // Prueba con varios formatos en una sola línea
-    printf("| len %d\n", printf("prueba múltiples formatos: %d %u %x %X %s\n", 123, 456, 789, 101112, "texto"));
-    ft_printf("| len %d\n", ft_printf("prueba múltiples formatos: %d %u %x %X %s\n", 123, 456, 789, 101112, "texto"));
-
-    // Prueba con enteros de diferentes longitudes
-    printf("| len %d\n", printf("prueba entero corto: %hd, entero largo: %ld\n", (short)32000, 123456789L));
-    ft_printf("| len %d\n", ft_printf("prueba entero corto: %hd, entero largo: %ld\n", (short)32000, 123456789L));
-
-    // Prueba de enteros negativos grandes
-    printf("| len %d\n", printf("prueba entero negativo grande: %d\n", -INT_MAX));
-    ft_printf("| len %d\n", ft_printf("prueba entero negativo grande: %d\n", -INT_MAX));
-
-    // Prueba con formato de porcentaje
-    printf("| len %d\n", printf("porcentaje: %%\n"));
-    ft_printf("| len %d\n", ft_printf("porcentaje: %%\n"));
-
-    // Pruebas de buffer lleno (teóricamente, si tu ft_printf maneja esto)
-    // Aquí puedes simular un buffer lleno dependiendo de tu implementación
-
-    return 0;
+	va_start(args, mod);
+	i = -1;
+	n_char = 0;
+	while (mod[++i] != '\0' && n_char >= 0)
+	{
+		if (mod[i] == '%')
+			n_char = ft_format(n_char, mod[++i], args);
+		else
+		{
+			if (write(1, &(mod[i]), 1) == -1)
+				return (va_end(args), -1);
+			n_char++;
+		}
+	}
+	va_end(args);
+	if (n_char == -1)
+		return (-1);
+	return (n_char);
 }
