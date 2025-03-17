@@ -53,7 +53,7 @@ static ssize_t	ft_format(ssize_t i, char const c, va_list args)
 	else if (c == 'p')
 		n_printed = ft_printmem(va_arg(args, void *));
 	else if (c == 'd' || c == 'i')
-		n_printed = ft_putnbr_base(va_arg(args, int), "0123456789");
+		n_printed = ft_putnbr(va_arg(args, int));
 	else if (c == 'u')
 		n_printed = ft_putuint_base(va_arg(args, unsigned int), "0123456789");
 	else if (c == 'x')

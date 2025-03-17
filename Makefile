@@ -6,7 +6,7 @@ CC = cc
 CFLAGS = -Wall -Wextra -Werror
 
 # Source files
-FILES = ft_printf.c ft_putnbr_base.c ft_printf_utils.c
+FILES = ft_printf.c ft_printf_utils.c
 OBJECTS = $(FILES:.c=.o)
 
 # Library path
@@ -18,11 +18,13 @@ all: $(LIBFT) $(NAME)
 
 # Rule to create the library
 $(NAME): $(OBJECTS) $(LIBFT)
-	ar rcs $(NAME) $(OBJECTS) $(LIBFT)
+	ar rcs $(NAME) $(OBJECTS)
 
+# Rule that applies when an object is compiled
 %.o: %.c ft_printf.h $(LIBDIR)/libft.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Rule to create the needed library
 $(LIBFT):
 	make -C $(LIBDIR) all
 

@@ -1,18 +1,6 @@
 
 #include "ft_printf.h"
 
-size_t	ft_strlen(const char *str)
-{
-	int	counter;
-
-	counter = 0;
-	while (str[counter] != '\0')
-	{
-		counter++;
-	}
-	return (counter);
-}
-
 ssize_t	ft_putchar(char c)
 {
 	char	*c_ptr;
@@ -26,6 +14,35 @@ ssize_t	ft_putstr(char *s)
 	if (!s)
 		return (write(1, "(null)", 6));
 	return (write(1, s, ft_strlen(s)));
+}
+
+ssize_t	ft_putnbr(int n)
+{
+	char	c;
+	ssize_t	count;
+	ssize_t	temp;
+
+	count = 0;
+	if (n == -(__INT32_MAX__) - 1)
+		return (write(1, "-2147483648", 11));
+	if (n < 0)
+	{
+		if (write(1, "-", 1) == -1)
+			return (-1);
+		n *= -1;
+		count++;
+	}
+	if (n > 9)
+	{
+		temp = ft_putnbr(n / 10);
+		if (temp == -1)
+			return (-1);
+		count += temp;
+	}
+	c = (n % 10) + '0';
+	if (write(1, &c, 1) == -1)
+		return (-1);
+	return (count + 1);
 }
 
 ssize_t	ft_putlong_base(unsigned long num, char *base)
